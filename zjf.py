@@ -15,78 +15,65 @@
 import json
 import random
 
-
-global student_list
-
 roomdict = {}
 
-student_list=[]
-
+student_list = []
 
 # 新增学生函数
 def new_student():
     global student_list
     print("*" * 50)
     print('新增学生')
-    flag = 1
-    while flag:
-        ID_studnet_list = []
-        ID_str = input('请输入学生学号')
-        for card_dict in student_list:
-            ID_studnet_list.append(card_dict['ID_str'])
-        if ID_str.isnumeric()==True and ID_str in ID_studnet_list :
-            print('你输入的学号已经存在')
-            flag = 1
-        else:
-            flag = 0
-    name_str = input('请输入姓名')
+    ID_studnet_list = []
+    for student_dict in student_list:
+        ID_studnet_list.append(student_dict['student_ID'])
     while True:
-        sex_str = input('请输入性别')
-        if sex_str in ('男', '女'):
-            break
-        else:
-            print('您输入的性别有误，请重新输入')
-            continue
+        try:
+            student_ID = int(input('请输入学生学号'))
+            if str(student_ID) not in ID_studnet_list:
+                break
+            else:
+                print('您输入的学号已存在')
+        except ValueError:
+            print('您输入的学号有误请重新输入')
+    student_name = input('请输入姓名')
     while True:
-        age_str = input('请输入年龄')
-        if age_str.isnumeric():
+        student_sex = input('请输入性别')
+        if student_sex in ('男', '女'):
             break
-        else:
-            print('您输入的年龄有误，请重新输入')
-            continue
+        print('您输入的性别有误，请重新输入')
+    while True:
+        try:
+            student_age = int(input('请输入年龄'))
+            break
+        except ValueError:
+                print('您输入的年龄有误，请重新输入')
     while True:
         to_room = input('输入0，自动分配寝室号:\n输入1,手动分配寝室号:')
         if to_room in ('0'):
-            room_str = automatic_room(sex_str)  #调用自动分配函数  返回值为房间号
+            student_room = automatic_room(student_sex)  #调用自动分配函数  返回值为房间号
             break
         elif to_room in ('1'):
-            room_str = hand_allot_room()  #调用手动分配函数 返回值为房间号
+            student_room = hand_allot_room(student_sex)  #调用手动分配函数 返回值为房间号
             break
         else:
             print('输入有误请重新输入')
-            continue
-    card_dict = {'ID_str': ID_str, 'name_str': name_str, 'sex_str': sex_str, 'age_str': age_str, 'room_str': room_str}
-    student_list.append(card_dict)
-    print('添加%s的信息成功' % name_str)
+    student_dict = {'student_ID': str(student_ID), 'student_name': student_name, 'student_sex': student_sex, 'student_age': student_age, 'student_room': student_room}
+    student_list.append(student_dict)
+    saveToJson()
+    print('添加%s的信息成功' % student_name)
 
 
 # 寝室的自动分配的函数
-def automatic_room(sex_str):
-    flag = 1
-    while flag:
-        if sex_str == '男':
-            key = str(random.randint(100, 102))#保存模板{key(房间号):count(房间人数)}
-            count = roomdict.setdefault(key, 0)
-            if count < 4:
-                roomdict[key] += 1
-                flag = 0
-        else:
-            key = str(random.randint(200, 202))
-            count = roomdict.setdefault(key, 0)
-            if count < 4:
-                roomdict[key] += 1
-                flag = 0
-        return key #返回房间号被录入信息时调用
+def automatic_room(student_sex):
+    k = 1 if student_sex == "男" else 2
+    while True:
+        key = str(random.randint(100 * k, 100 * k + 2))  # 保存模板{key(房间号):count(房间人数)}
+        count = roomdict.setdefault(key, 0)
+        if count < 4:
+            roomdict[key] += 1
+            break
+    return key
 
 
 # 显示所有学生信息的函数
@@ -95,24 +82,23 @@ def show_all_student():
     print("显示所有学生信息")
     print("学号\t\t姓名\t\t性别\t\t年龄\t\t寝室号")
     print("=" * 50)
-    for card_dict in student_list:
+    for student_dict in student_list:
         print("%s\t\t%s\t\t%s\t\t%s\t\t%s" % (
-        card_dict['ID_str'], card_dict['name_str'], card_dict['sex_str'], card_dict['age_str'], card_dict['room_str']))
+        student_dict['student_ID'], student_dict['student_name'], student_dict['student_sex'], student_dict['student_age'], student_dict['student_room']))
 
 
 # 搜索学号的函数
-def search_card():
+def search_student():
     print("======================我是可爱的分割线========================")
     print("[搜索学生信息]\n")
     find_id = input("请你输入想要查找的学号:")
-    for card_dict in student_list:  # 打印输出这个字典的值
-        if find_id in card_dict['ID_str']:
+    for student_dict in student_list:  # 打印输出这个字典的值
+        if find_id in student_dict['student_ID']:
             print("%s\t\t%s\t\t%s\t\t%s\t\t%s" % (
-            card_dict['ID_str'], card_dict['name_str'], card_dict['sex_str'], card_dict['age_str'],
-            card_dict['room_str']))
-        else:
-            print('你想查找的学号不存在')
-            break
+            student_dict['student_ID'], student_dict['student_name'], student_dict['student_sex'], student_dict['student_age'],
+            student_dict['student_room']))
+            return
+    print('你想查找的学号不存在')
 
 
 # 显示寝室的函数
@@ -126,9 +112,9 @@ def show_room():
     if choice in ("1", '0'):
         if choice == '1':
             find_room = input('您想要查找的寝室号是:')
-            for card_dict in student_list:  # 打印输出这个字典的值
-                if find_room == card_dict['room_str']:
-                    print("%s\t\t%s\t\t%s\t\t%s\t\t%s" % (card_dict['ID_str'], card_dict['name_str'], card_dict['sex_str'], card_dict['age_str'],card_dict['room_str']))
+            for student_dict in student_list:  # 打印输出这个字典的值
+                if find_room == student_dict['student_room']:
+                    print("%s\t\t%s\t\t%s\t\t%s\t\t%s" % (student_dict['student_ID'], student_dict['student_name'], student_dict['student_sex'], student_dict['student_age'],student_dict['student_room']))
         else:
             return
     else:
@@ -137,71 +123,34 @@ def show_room():
 
 
 # 删除学生信息函数
-def delete():
+def delete_student():
     print("删除学生信息界面")
     delete_ID = input('请输入您想删除的学生号是')
-    for card_dict in student_list:
-        if delete_ID in card_dict['ID_str']:
-            print('%s号学生已经被删除' % card_dict['ID_str'])
-            index = student_list.index(card_dict)
+    for student_dict in student_list:
+        if delete_ID in student_dict['student_ID']:
+            print('%s号学生已经被删除' % student_dict['student_ID'])
+            index = student_list.index(student_dict)
             student_list.pop(index)
-            break
-        else:
-            print('您输入的学号有误')
-            break
+            saveToJson()
+            return
+    print('你输入的学号不存在')
 
 
 # 手动分配寝室函数
-def hand_allot_room():
-    print('学生寝室手动交换界面')
-    room_choice = input('请输入您想选择的寝室号')
-    room_sex = input('请输入您的性别')
-    if room_choice in ('100','101','102') and room_sex == '男':
-        if room_choice == '100':
-            count = roomdict.setdefault('100', 0)
+def hand_allot_room(student_sex):
+    print('手动分配寝室')
+    k = 1 if student_sex == '男' else 2
+    while True:
+        room_choice = input('请输入您想选择的寝室号')
+        if room_choice in [str(x) for x in range(k*100,k*100+3)]:
+            count = roomdict.setdefault(room_choice,0)
+            print(room_choice)
             if count < 4:
-                roomdict['100'] += 1
-                return '100'
-            else:
-                print('这间寝室已满，请重新选择寝室')
-        elif room_choice == '101':
-                count = roomdict.setdefault('101', 0)
-                if count < 4:
-                    roomdict['101'] += 1
-                    return '101'
-                else:
-                    print('这间寝室已满，请重新选择寝室')
-        elif room_choice == '102':
-                count = roomdict.setdefault('102', 0)
-                if count < 4:
-                    roomdict['102'] += 1
-                    return '102'
-                else:
-                    print('这间寝室已满，请重新选择寝室')
-    elif room_choice in ('200', '201', '202') and room_sex == '女':
-        if room_choice == '200':
-            count = roomdict.setdefault('200', 0)
-            if count < 4:
-                roomdict['200'] += 1
-                return '200'
-            else:
-                print('这间寝室已满，请重新选择寝室')
-        elif room_choice == '201':
-                count = roomdict.setdefault('201', 0)
-                if count < 4:
-                    roomdict['201'] += 1
-                    return '201'
-                else:
-                    print('这间寝室已满，请重新选择寝室')
-        elif room_choice == '202':
-                count = roomdict.setdefault('202', 0)
-                if count < 4:
-                    roomdict['202'] += 1
-                    return '202'
-                else:
-                    print('这间寝室已满，请重新选择寝室')
-    else:
-        print('您输入的寝室号或性别有误，请重新输入')
+                break
+            print('该寝室已满')
+        else:
+            print('您输入的寝室不存在')
+    return room_choice
 
 
 # 双方交换寝室函数
@@ -211,14 +160,15 @@ def change_room():
     ID_second = input('请输入交换对方的学号')
     ID_list = [] #存放交换双方的空列表
     for card_dict in student_list:
-        if card_dict['ID_str']==ID_frist:
+        if card_dict['student_ID']==ID_frist:
             ID_list.append(card_dict)   #存放第一个学生的信息去ID_list[]
-        elif card_dict['ID_str']==ID_second:
+        elif card_dict['student_ID']==ID_second:
             ID_list.append(card_dict)   #存放第二个学生的信息去ID_list[]
-    if ID_list[0]['sex_str']==ID_list[1]['sex_str']:
-        ID_list[0]['room_str'],ID_list[1]['room_str']=ID_list[1]['room_str'],ID_list[0]['room_str']  #交换寝室号码
+    if ID_list[0]['student_sex']==ID_list[1]['student_sex']:
+        ID_list[0]['student_room'],ID_list[1]['student_room']=ID_list[1]['student_room'],ID_list[0]['student_room']  #交换寝室号码
     else:
         print('男女有别,请换间寝室')
+    saveToJson()
 
 
 # 显示所有的菜单函数
@@ -248,7 +198,7 @@ def show_menu():
             input()
             continue
         elif int(choice) == 3:#搜索学生信息
-            search_card()
+            search_student()
             print("按enter键继续：")
             input()
             continue
@@ -263,7 +213,7 @@ def show_menu():
             input()
             continue
         elif int(choice) == 6: #删除学生信息
-            delete()
+            delete_student()
             print("按enter键继续：")
             input()
             continue
@@ -294,12 +244,12 @@ def readToJson():
         student_list = Nolist
 
 
-Nolist = [{'ID_str': '1', 'name_str': '路飞', 'sex_str': '男', 'age_str': '15', 'room_str': '100'},
-          {'ID_str': '2', 'name_str': '香吉', 'sex_str': '男', 'age_str': '22', 'room_str': '100'},
-          {'ID_str': '3', 'name_str': '索隆', 'sex_str': '男', 'age_str': '23', 'room_str': '102'},
-          {'ID_str': '4', 'name_str': '娜美', 'sex_str': '女', 'age_str': '21', 'room_str': '200'},
-          {'ID_str': '5', 'name_str': '罗宾', 'sex_str': '女', 'age_str': '21', 'room_str': '201'},
-          {'ID_str': '6', 'name_str': '汗可', 'sex_str': '女', 'age_str': '21', 'room_str': '201'}]
+Nolist = [{'student_ID': '1', 'student_name': '路飞', 'student_sex': '男', 'student_age': '15', 'student_room': '100'},
+          {'student_ID': '2', 'student_name': '香吉', 'student_sex': '男', 'student_age': '22', 'student_room': '100'},
+          {'student_ID': '3', 'student_name': '索隆', 'student_sex': '男', 'student_age': '23', 'student_room': '102'},
+          {'student_ID': '4', 'student_name': '娜美', 'student_sex': '女', 'student_age': '21', 'student_room': '200'},
+          {'student_ID': '5', 'student_name': '罗宾', 'student_sex': '女', 'student_age': '21', 'student_room': '201'},
+          {'student_ID': '6', 'student_name': '汗可', 'student_sex': '女', 'student_age': '21', 'student_room': '201'}]
 
 if __name__ == "__main__":
     readToJson()
