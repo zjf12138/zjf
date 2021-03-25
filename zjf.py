@@ -25,8 +25,8 @@ def new_student():
     print("*" * 50)
     print('新增学生')
     ID_studnet_list = []
-    for student in stu_list:
-        ID_studnet_list.append(student['stu_ID'])
+    for stu in stu_list:
+        ID_studnet_list.append(stu['stu_ID'])
     while True:
         try:
             stu_ID = int(input('请输入学生学号'))
@@ -49,6 +49,12 @@ def new_student():
         except ValueError:
                 print('您输入的年龄有误，请重新输入')
     while True:
+        if str(len(stu_list)) == '24':
+            print('寝室人员已满，无法再住进学校')
+            return
+        else:
+            break
+    while True:
         to_room = input('输入0，自动分配寝室号:\n输入1,手动分配寝室号:')
         if to_room == '0':
             stu_room = automatic_room(stu_sex)  #调用自动分配函数  返回值为房间号
@@ -56,10 +62,11 @@ def new_student():
         elif to_room == '1':
             stu_room = hand_dormitory(stu_sex)  #调用手动分配函数 返回值为房间号
             break
+
         else:
             print('输入有误请重新输入')
-    student = {'stu_ID': str(stu_ID), 'stu_name': stu_name, 'stu_sex': stu_sex, 'stu_age': stu_age, 'stu_room': stu_room}
-    stu_list.append(student)
+    stu = {'stu_ID': str(stu_ID), 'stu_name': stu_name, 'stu_sex': stu_sex, 'stu_age': stu_age, 'stu_room': stu_room}
+    stu_list.append(stu)
     saveToJson()
     print('添加%s的信息成功' % stu_name)
 
@@ -92,6 +99,7 @@ def search_student():
     print("[搜索学生信息]\n")
     while True:
         find_id = input("请你输入想要查找的学号:")
+        print("学号\t\t姓名\t\t性别\t\t年龄\t\t寝室号")
         for student in stu_list:  # 打印输出这个字典的值
             if find_id in student['stu_ID']:
                 print("%s\t\t%s\t\t%s\t\t%s\t\t%s" % (
@@ -106,6 +114,7 @@ def show_room():
     id_list = []
     while True:
         find_room = input('您想要查找的寝室号是:')
+        print("学号\t\t姓名\t\t性别\t\t年龄\t\t寝室号")
         for student in stu_list:  # 打印输出这个字典的值
             if find_room == student['stu_room']:
                 id_list.append(student)
@@ -164,14 +173,13 @@ def change_room():
         try:
             if ID_list[0]['stu_sex']==ID_list[1]['stu_sex']:
                 ID_list[0]['stu_room'],ID_list[1]['stu_room']=ID_list[1]['stu_room'],ID_list[0]['stu_room']  #交换寝室号码
-                print('%s同学现在的寝室为%s' % (ID_list[0]['stu_name'], ID_list[0]['stu_room']))
                 saveToJson()
+                print('%s同学现在的寝室为%s' % (ID_list[0]['stu_name'], ID_list[0]['stu_room']))
                 return
             else:
                 print('男女性别有误')
         except IndexError:
             print('学号或性别有误,请换间寝室')
-
 
 
 #单方面选择寝室
@@ -309,7 +317,7 @@ Nolist = [{'stu_ID': '1', 'stu_name': '路飞', 'stu_sex': '男', 'stu_age': '15
 
 
 if __name__ == "__main__":
-    reset_rm_dict()
     readToJson()
+    reset_rm_dict()
     show_menu()
     saveToJson()
